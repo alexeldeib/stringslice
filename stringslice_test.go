@@ -119,3 +119,43 @@ func TestHas(t *testing.T) {
 		})
 	}
 }
+
+func TestFilter(t *testing.T) {
+	tests := map[string]struct {
+		input []string
+		keep  func(val string) bool
+		want  []string
+	}{
+		"should return input unchange": {
+			[]string{"foo"},
+			func(val string) bool { return true },
+			[]string{"foo"},
+		},
+		"should return empty slice": {
+			[]string{"foo"},
+			func(val string) bool { return false },
+			[]string{},
+		},
+		"should work on nil slice": {
+			nil,
+			func(val string) bool { return true },
+			nil,
+		},
+		"should remove multiple elements": {
+			[]string{"foo", "bar", "baz"},
+			func(val string) bool { return val == "baz" },
+			[]string{"baz"},
+		},
+	}
+
+	for name, tc := range tests {
+		name, tc := name, tc // https://github.com/golang/go/wiki/CommonMistakes
+		t.Run(name, func(t *testing.T) {
+			got := Filter(tc.input, tc.keep)
+			diff := cmp.Diff(tc.want, got)
+			if diff != "" {
+				t.Fatalf(diff)
+			}
+		})
+	}
+}
